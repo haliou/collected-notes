@@ -1,2 +1,1 @@
-# collected-notes
 Collected Notes
