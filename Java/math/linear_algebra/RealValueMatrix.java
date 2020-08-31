@@ -1,7 +1,12 @@
 package math.linear_algebra;
 
+import java.util.Random;
+
+import exceptions.DimensionMismatchException;
+import math.util.Numbers;
+
 /**
- *
+ * Matrix of real numbers
  */
 public class RealValueMatrix implements Matrix<Double>{
 
@@ -17,14 +22,14 @@ public class RealValueMatrix implements Matrix<Double>{
     public RealValueMatrix( ){
         this.rows = 0;
         this.columns = 0;
-        entries = null;
+        this.entries = new Double[ rows ][ columns ];
     }
 
     // create M-by-columns matrix of 0's
     public RealValueMatrix( final int rows, final int columns ){
         this.rows = rows;
         this.columns = columns;
-        entries = new Double[ rows ][ columns ];
+        this.entries = new Double[ rows ][ columns ];
     }
 
     // create matrix based on 2d array
@@ -42,16 +47,6 @@ public class RealValueMatrix implements Matrix<Double>{
         return entries;
     }
 
-    @Override
-    public Matrix random( int rows, int columns ){
-        return null;
-    }
-
-    @Override
-    public Matrix<Double> identity( final int columns ){
-        final Matrix<Double> matrix = new RealValueMatrix( 0, columns );
-        return matrix;
-    }
 
     @Override
     public int rows( ){
@@ -63,49 +58,48 @@ public class RealValueMatrix implements Matrix<Double>{
         return columns;
     }
 
-    // swap rows i and j
-    private void swap( int i, int j ){
-        Double[] temp = entries[ i ];
-        entries[ i ] = entries[ j ];
-        entries[ j ] = temp;
-    }
-
-    // create and return the transpose of the invoking matrix
     @Override
     public Matrix transpose( ){
-        Matrix A = new RealValueMatrix( columns, rows );
-        for( int i = 0; i < rows; i++ )
-            for( int j = 0; j < columns; j++ )
-                A.getEntries( )[ j ][ i ] = this.entries[ i ][ j ];
-        return A;
+        final Matrix transpose = new RealValueMatrix( columns, rows );
+        for( int i = 0; i < rows; i++ ){
+            for( int j = 0; j < columns; j++ ){
+                transpose.getEntries( )[ j ][ i ] = this.entries[ i ][ j ];
+            }
+        }
+        return transpose;
     }
 
-    // return C = A + B
     @Override
-    public Matrix plus( Matrix B ){
-        Matrix A = this;
-        if( B.rows( ) != A.rows( ) || B.columns( ) != A.columns( ) ) throw new RuntimeException( "Illegal matrix " +
-                "dimensions" +
-                "." );
-        Matrix C = new RealValueMatrix( rows, columns );
-        for( int i = 0; i < rows; i++ )
-            for( int j = 0; j < columns; j++ )
-                C.getEntries( )[ i ][ j ] = ( double ) A.getEntries( )[ i ][ j ] + ( double ) B.getEntries( )[ i ][ j ];
-        return C;
+    public Matrix add( final Matrix other ){
+
+        if( this.rows != other.rows( ) || this.columns != other.columns( ) ){
+            throw new DimensionMismatchException( this.rows, this.columns, other.rows( ), other.columns( ) );
+        }
+
+        final Matrix sum = new RealValueMatrix( rows, columns );
+        for( int i = 0; i < rows; i++ ){
+            for( int j = 0; j < columns; j++ ){
+                sum.getEntries( )[ i ][ j ] =
+                        Numbers.add( this.entries[ i ][ j ], ( double ) other.getEntries( )[ i ][ j ] );
+            }
+        }
+        return sum;
     }
 
-
-    // return C = A - B
     @Override
-    public Matrix minus( Matrix B ){
-        Matrix A = this;
-        if( B.rows( ) != A.rows( ) || B.columns( ) != A.columns( ) )
-            throw new RuntimeException( "Illegal matrix dimensions." );
-        Matrix C = new RealValueMatrix( rows, columns );
-        for( int i = 0; i < rows; i++ )
-            for( int j = 0; j < columns; j++ )
-                C.getEntries( )[ i ][ j ] = ( double ) A.getEntries( )[ i ][ j ] - ( double ) B.getEntries( )[ i ][ j ];
-        return C;
+    public Matrix subtract( final Matrix other ){
+
+        if( this.rows != other.rows( ) || this.columns != other.columns( ) ){
+            throw new DimensionMismatchException( this.rows, this.columns, other.rows( ), other.columns( ) );
+        }
+        Matrix difference = new RealValueMatrix( rows, columns );
+        for( int i = 0; i < rows; i++ ){
+            for( int j = 0; j < columns; j++ ){
+                difference.getEntries( )[ i ][ j ] =
+                        Numbers.subtract( this.entries[ i ][ j ], ( double ) other.getEntries( )[ i ][ j ] );
+            }
+        }
+        return difference;
     }
 
     @Override
@@ -118,6 +112,24 @@ public class RealValueMatrix implements Matrix<Double>{
                 for( int k = 0; k < A.columns( ); k++ )
                     C.getEntries( )[ i ][ j ] = ( ( double ) A.getEntries( )[ i ][ k ] * ( double ) B.getEntries( )[ k ][ j ] );
         return C;
+    }
+
+    @Override
+    public Matrix random( int rows, int columns ){
+        final Random random = new Random( );
+        final Double[][] randomEntries = new Double[ rows ][ columns ];
+        for( int i = 0; i < rows; i++ ){
+            for( int j = 0; j < columns; j++ ){
+                randomEntries[ i ][ j ] = random.nextDouble( );
+            }
+        }
+        return new RealValueMatrix( randomEntries );
+    }
+
+    @Override
+    public Matrix<Double> identity( final int columns ){
+        final Matrix<Double> matrix = new RealValueMatrix( 0, columns );
+        return matrix;
     }
 
     @Override
