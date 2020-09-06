@@ -47,6 +47,26 @@ public class RealValueVectorTest{
         final Vector<Double> f = c.subtract( d );
         show( f );
 
+        final double dot = c.dot( d );
+        System.out.printf( "C dot D == %f%n", dot );
+        System.out.println( "------------------" );
+
+        try{
+            System.out.println( " C cross D" );
+            final Vector<Double> g = c.cross( d );
+            show( g );
+        }catch( IllegalArgumentException illegalArgumentException ){
+            System.out.println( illegalArgumentException.getMessage( ) );
+            System.out.println( "------------------" );
+        }
+
+        final Vector<Double> one = new RealValueVector( ).random( 3 );
+        final Vector<Double> two = new RealValueVector( ).random( 3 );
+        System.out.printf( "%s cross %s = %s%n", one, two, one.cross( two ) );
+        System.out.printf( "%s cross %s = %s%n", two, one, two.cross( one ) );
+        show( one.cross( two ) );
+
+
 
     }
 

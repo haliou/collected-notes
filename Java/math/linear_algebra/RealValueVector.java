@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import java.util.Random;
 
 import exceptions.DimensionMismatchException;
+import math.util.Numbers;
 
 /**
  * Vector of real numbers
@@ -51,40 +52,55 @@ public class RealValueVector implements Vector<Double>{
 
     @Override
     public Vector<Double> add( final Vector other ){
-        if( entries.length != other.size( ) ){
-            throw new DimensionMismatchException( entries.length, 1, other.size( ), 1 );
-        }
-        final RealValueVector result = new RealValueVector( entries.length );
+        assertVectorSize( other );
+        final Vector<Double> result = new RealValueVector( entries.length );
         for( int i = 0; i < entries.length; i++ ){
-            final BigDecimal sum =
-                    BigDecimal.valueOf( this.entries[ i ][ 0 ] ).add( BigDecimal.valueOf( other.getEntries( )[ i ][ 0 ] ) );
-            result.getEntries( )[ i ][ 0 ] = sum.doubleValue( );
+            result.getEntries( )[ i ][ 0 ] = Numbers.add( this.entries[ i ][ 0 ], other.getEntries( )[ i ][ 0 ] );
         }
         return result;
     }
 
     @Override
     public Vector<Double> subtract( Vector<Double> other ){
-        if( entries.length != other.size( ) ){
-            throw new DimensionMismatchException( entries.length, 1, other.size( ), 1 );
-        }
-        final RealValueVector result = new RealValueVector( entries.length );
+        assertVectorSize( other );
+        final Vector<Double> result = new RealValueVector( entries.length );
         for( int i = 0; i < entries.length; i++ ){
-            final BigDecimal difference =
-                    BigDecimal.valueOf( this.entries[ i ][ 0 ] ).subtract( BigDecimal.valueOf( other.getEntries( )[ i ][ 0 ] ) );
-            result.getEntries( )[ i ][ 0 ] = difference.doubleValue( );
+            result.getEntries( )[ i ][ 0 ] = Numbers.subtract( this.entries[ i ][ 0 ], other.getEntries( )[ i ][ 0 ] );
         }
         return result;
     }
 
     @Override
     public double dot( Vector<Double> other ){
-        throw new NotImplementedException( );
+        assertVectorSize( other );
+        double result = 0;
+        for( int i = 0; i < entries.length; i++ ){
+            result += Numbers.multiply( this.entries[ i ][ 0 ], other.getEntries( )[ i ][ 0 ] );
+        }
+        return result;
     }
 
     @Override
     public Vector<Double> cross( Vector<Double> other ){
-        throw new NotImplementedException( );
+        if( this.size( ) != 3 || other.size( ) != 3 ){
+            throw new IllegalArgumentException( "The cross product is only valid for vector in 3D" );
+        }
+        final Vector<Double> result = new RealValueVector( 3 );
+        for( int i = 0; i < 3; i++ ){
+
+            result.getEntries( )[ 0 ][ 0 ] = Numbers.subtract(
+                    Numbers.multiply( this.entries[ 1 ][ 0 ], other.getEntries( )[ 2 ][ 0 ] ),
+                    Numbers.multiply( this.entries[ 2 ][ 0 ], other.getEntries( )[ 1 ][ 0 ] ) );
+
+            result.getEntries( )[ 1 ][ 0 ] = Numbers.subtract(
+                    Numbers.multiply( this.entries[ 0 ][ 0 ], other.getEntries( )[ 2 ][ 0 ] ),
+                    Numbers.multiply( this.entries[ 2 ][ 0 ], other.getEntries( )[ 0 ][ 0 ] ) );
+
+            result.getEntries( )[ 2 ][ 0 ] = Numbers.subtract(
+                    Numbers.multiply( this.entries[ 0 ][ 0 ], other.getEntries( )[ 1 ][ 0 ] ),
+                    Numbers.multiply( this.entries[ 1 ][ 0 ], other.getEntries( )[ 0 ][ 0 ] ) );
+        }
+        return result;
     }
 
     @Override
@@ -122,5 +138,11 @@ public class RealValueVector implements Vector<Double>{
         builder.deleteCharAt( builder.lastIndexOf( "," ) ); // remove the last comma
         builder.append( "]" );
         return builder.toString( );
+    }
+
+    private void assertVectorSize( final Vector<Double> other ){
+        if( entries.length != other.size( ) ){
+            throw new DimensionMismatchException( entries.length, 1, other.size( ), 1 );
+        }
     }
 }
