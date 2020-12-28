@@ -1,0 +1,43 @@
+server{
+    listen 80;
+    server_name $domain$.$tld$ www.$domain$.$tld$;
+    return 301 https://www.$domain$.$tld$$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name $domain$.$tld$ www.$domain$.$tld$;
+
+    root /var/www/domain;
+    index index.php;
+    access_log /var/log/nginx/$domain$.access.log;
+    error_log /var/log/nginx/$domain$.error.log;
+
+    # ssl on;
+    ssl_certificate /etc/letsencrypt/live/$domain$.$tld$/fullchain.pem;
+    ssl_certificate_key  /etc/letsencrypt/live/$domain$.$tld$/privkey.pem;
+    ssl_protocols TLSv1 TLSv1.1 TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers on;
+    ssl_session_timeout 1d;
+    ssl_session_cache shared:SSL:50m;
+    ssl_stapling on;
+    ssl_stapling_verify on;
+
+    add_header Strict-Transport-Security max-age=15768000;
+    proxy_set_header    Host              $host;
+    proxy_set_header    X-Real-IP         $remote_addr;
+    proxy_set_header    X-Forwarded-For   $proxy_add_x_forwarded_for;
+    proxy_set_header    X-Forwarded-SSL on;
+    proxy_set_header    X-Forwarded-Proto $scheme;
+
+
+    location / {
+        #try_files $uri $uri/ =404;
+        try_files $uri $uri/ /index.php$is_args$args;
+    }
+
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/run/php/php7.4-fpm.sock;
+    }
+}
